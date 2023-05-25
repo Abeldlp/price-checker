@@ -45,13 +45,14 @@ func NotifyUsersCronJob() {
 				// 前より値段が低い場合新しい値段を保存し、登録ユーザにお知らせ
 				if price < product.CurrentPrice {
 					product.CurrentPrice = price
-					proSer.UpdateProduct(product)
 					user, err := proSer.GetProductUser(product.Id)
 					if err != nil {
 						log.Fatal(err)
 					}
 
-					usrSer.NotifyUser(user.Email)
+					usrSer.NotifyUser(user.Email, product)
+
+					proSer.UpdateProduct(product)
 				}
 			}(product)
 		}
