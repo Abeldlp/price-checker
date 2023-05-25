@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 
@@ -13,7 +14,7 @@ import (
 // UserService ユーザサービス
 type UserService interface {
 	GetUser(userId int) (*model.User, error)
-	SaveUser(userEmail string)
+	SaveUser(userEmail string) int
 	NotifyUser(userEmail string, product model.Product)
 }
 
@@ -25,10 +26,21 @@ func NewUserService() UserService {
 }
 
 // SaveUser ユーザを保存
-func (p *UService) SaveUser(userEmail string) {
+func (p *UService) SaveUser(userEmail string) int {
 	user := model.NewUser(userEmail)
 
-	fmt.Println("Creating user", user)
+	qry := "INSERT INTO users (email) VALUES ('" + user.Email + "') RETURNING id"
+
+	var id int
+	err := config.DB.QueryRow(qry).Scan(&id)
+	if err != nil {
+		log.Fatal(err.Error())
+		return 0
+	}
+
+	user.Id = id
+
+	return user.Id
 }
 
 // GetUser ユーザを取得
@@ -36,6 +48,7 @@ func (p *UService) GetUser(userId int) (*model.User, error) {
 	qry := "SELECT * FROM users WHERE id=" + strconv.Itoa(userId)
 	var user model.User
 
+	// ユーザを取得
 	rows, err := config.DB.Query(qry)
 	if err != nil {
 		return nil, err
@@ -43,6 +56,7 @@ func (p *UService) GetUser(userId int) (*model.User, error) {
 
 	defer rows.Close()
 
+	// ユーザを設定
 	for rows.Next() {
 		err := rows.Scan(&user.Id, &user.Email)
 		if err != nil {
@@ -50,6 +64,7 @@ func (p *UService) GetUser(userId int) (*model.User, error) {
 		}
 	}
 
+	// エラー処理
 	if err = rows.Err(); err != nil {
 		panic(err.Error())
 	}

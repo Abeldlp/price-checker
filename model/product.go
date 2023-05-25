@@ -18,7 +18,8 @@ func NewProduct(url string) *Product {
 }
 
 // Scrape 商品の値段を取得
-func (p *Product) Scrape() {
-	p.CurrentPrice = 23
+func (p *Product) Scrape() int {
+	p.CurrentPrice = 6000
 	fmt.Println(p.CurrentPrice)
+	return p.CurrentPrice
 }

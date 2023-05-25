@@ -11,6 +11,7 @@ import (
 // ProductService プロダクトサービス
 type ProductService interface {
 	UpdateProduct(product model.Product) bool
+	SaveProduct(product *model.Product) bool
 	GetProductPrice(productUrl string) (int, error)
 	GetAllProducts() (*[]model.Product, error)
 	GetProductUser(productId int) (*model.User, error)
@@ -30,6 +31,22 @@ func (p *PService) UpdateProduct(product model.Product) bool {
 	_, err := config.DB.Exec(qry)
 	if err != nil {
 		log.Fatal(err)
+		return false
+	}
+
+	return true
+}
+
+// SaveProduct プロダクトを保存
+func (p *PService) SaveProduct(product *model.Product) bool {
+	price := product.Scrape()
+
+	qry := fmt.Sprintf("INSERT INTO products (current_price, url, user_id) VALUES (%d, '%s', %d)", price, product.Url, product.UserId)
+
+	// プロダクトを保存
+	_, err := config.DB.Exec(qry)
+	if err != nil {
+		log.Fatal(err.Error())
 		return false
 	}
 
