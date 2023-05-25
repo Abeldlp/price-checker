@@ -2,13 +2,14 @@ package service
 
 import (
 	"fmt"
+	"log"
 
 	"githumb.com/Abeldlp/price-checker/config"
 	"githumb.com/Abeldlp/price-checker/model"
 )
 
 type ProductService interface {
-	SaveProduct(productUrl string)
+	UpdateProduct(product model.Product) bool
 	GetProductPrice(productUrl string) (int, error)
 	GetAllProducts() (*[]model.Product, error)
 	GetProductUser(productId int) (*model.User, error)
@@ -20,24 +21,26 @@ func NewProductService() ProductService {
 	return &PService{}
 }
 
-func (p *PService) SaveProduct(productUrl string) {
-	product := model.NewProduct(productUrl)
+func (p *PService) UpdateProduct(product model.Product) bool {
+	fmt.Println("Saving the following product:", product)
+	qry := fmt.Sprintf("UPDATE products SET current_price = %d, url = '%s' WHERE id = %d", product.CurrentPrice, product.Url, product.Id)
+	_, err := config.DB.Exec(qry)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
 
-	product.Scrape()
-
-	// TODO DB save product
+	return true
 }
 
 func (p *PService) GetProductPrice(productUrl string) (int, error) {
-	fmt.Println(productUrl)
-	return 1, nil
+	return 2000, nil
 }
 
 func (p *PService) GetProductUser(productId int) (*model.User, error) {
 	qry := fmt.Sprintf("SELECT u.* FROM products as p LEFT JOIN users as u ON p.user_id=u.id WHERE p.id = %d", productId)
 	var user model.User
 
-	fmt.Println("OK here")
 	rows, err := config.DB.Query(qry)
 	if err != nil {
 		return nil, err
