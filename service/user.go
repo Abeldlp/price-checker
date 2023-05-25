@@ -10,6 +10,7 @@ import (
 	"gopkg.in/gomail.v2"
 )
 
+// UserService ユーザサービス
 type UserService interface {
 	GetUser(userId int) (*model.User, error)
 	SaveUser(userEmail string)
@@ -18,16 +19,19 @@ type UserService interface {
 
 type UService struct{}
 
+// NewUserService ユーザサービスを作成
 func NewUserService() UserService {
 	return &UService{}
 }
 
+// SaveUser ユーザを保存
 func (p *UService) SaveUser(userEmail string) {
 	user := model.NewUser(userEmail)
 
 	fmt.Println("Creating user", user)
 }
 
+// GetUser ユーザを取得
 func (p *UService) GetUser(userId int) (*model.User, error) {
 	qry := "SELECT * FROM users WHERE id=" + strconv.Itoa(userId)
 	var user model.User
@@ -56,14 +60,14 @@ func (p *UService) GetUser(userId int) (*model.User, error) {
 // 値段が下がり次第登録ユーザにお知らせのメールを送信
 func (p *UService) NotifyUser(userEmail string, product model.Product) {
 
-	// メッセージを作成
+	// メールの内容を設定
 	m := gomail.NewMessage()
 	m.SetHeader("From", os.Getenv("GMAIL_EMAIL"))
 	m.SetHeader("To", userEmail)
 	m.SetHeader("Subject", "Price Checker Notification")
 	m.SetBody("text/plain", fmt.Sprintf("The product you were waiting for is now: %d. Go check it out in: %s", product.CurrentPrice, product.Url))
 
-	// SMTPDialer を作成しGmailに認証
+	// SMTPサーバーの情報を設定
 	d := gomail.NewDialer("smtp.gmail.com", 587, os.Getenv("GMAIL_EMAIL"), os.Getenv("GMAIL_PASSWORD"))
 
 	// メールを送信
@@ -72,5 +76,6 @@ func (p *UService) NotifyUser(userEmail string, product model.Product) {
 		return
 	}
 
+	// メールを送信したら成功メッセージを表示
 	fmt.Println("Email sent successfully!")
 }

@@ -8,6 +8,7 @@ import (
 	"githumb.com/Abeldlp/price-checker/model"
 )
 
+// ProductService プロダクトサービス
 type ProductService interface {
 	UpdateProduct(product model.Product) bool
 	GetProductPrice(productUrl string) (int, error)
@@ -17,10 +18,12 @@ type ProductService interface {
 
 type PService struct{}
 
+// NewProductService プロダクトサービスを作成
 func NewProductService() ProductService {
 	return &PService{}
 }
 
+// UpdateProduct プロダクトを更新
 func (p *PService) UpdateProduct(product model.Product) bool {
 	fmt.Println("Saving the following product:", product)
 	qry := fmt.Sprintf("UPDATE products SET current_price = %d, url = '%s' WHERE id = %d", product.CurrentPrice, product.Url, product.Id)
@@ -33,10 +36,12 @@ func (p *PService) UpdateProduct(product model.Product) bool {
 	return true
 }
 
+// GetProductPrice プロダクトの値段を取得
 func (p *PService) GetProductPrice(productUrl string) (int, error) {
 	return 2000, nil
 }
 
+// GetProductUser プロダクトのユーザを取得
 func (p *PService) GetProductUser(productId int) (*model.User, error) {
 	qry := fmt.Sprintf("SELECT u.* FROM products as p LEFT JOIN users as u ON p.user_id=u.id WHERE p.id = %d", productId)
 	var user model.User
@@ -62,6 +67,7 @@ func (p *PService) GetProductUser(productId int) (*model.User, error) {
 	return &user, nil
 }
 
+// GetAllProducts 全てのプロダクトを取得
 func (p *PService) GetAllProducts() (*[]model.Product, error) {
 	qry := "SELECT * FROM products"
 	var products []model.Product

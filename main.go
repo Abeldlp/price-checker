@@ -3,19 +3,29 @@ package main
 import (
 	"githumb.com/Abeldlp/price-checker/config"
 	"githumb.com/Abeldlp/price-checker/cron"
+	"githumb.com/Abeldlp/price-checker/route"
 )
 
 func main() {
-	// アプリ起動
+	// 環境変数読み込み
 	config.InitilializeEnvironmentVariables()
+
+	// DB起動
 	config.InitializeDatabase()
-	cron.InitializeCron()
+	defer config.CloseDatabase()
+
+	// HTTP サーバー起動
+	config.InitializeGinServer()
+	route.InitializeRoutes()
 
 	// スケジュール起動
+	cron.InitializeCron()
 	cron.NotifyUsersCronJob()
 
-	// クローンのブロック
+	// Goroutine起動
 	go cron.Scheduler.StartBlocking()
+	go config.Server.Run()
 
+	// 終了待ち
 	select {}
 }
