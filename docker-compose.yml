@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  price_checker_db:
+    image: postgres
+    container_name: price_checker_db
+    environment:
+      POSTGRES_DB: "price_checker_db"
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_ROOT_PASSWORD: "password"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d price_checker_db -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+    ports:
+      - "5432:5432"
+    volumes:
+      - price_checker_db:/var/lib/postgres
+
+volumes:
+  price_checker_db:
+    driver: local
